@@ -10,8 +10,8 @@ app.use(express.static('public'));
 
 const DATA_FILE = path.join(__dirname, 'data.json');
 
-// Base de datos en memoria (simulada)
-let users = [
+// Usuarios por defecto
+const defaultUsers = [
   { id: 1, username: 'admin', password: 'admin123', role: 'admin' },
   { id: 2, username: 'user', password: 'user123', role: 'user' }
 ];
@@ -35,24 +35,32 @@ function loadData() {
   try {
     if (fs.existsSync(DATA_FILE)) {
       const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-      return data.products || defaultProducts;
+      return {
+        products: data.products || defaultProducts,
+        users: data.users || defaultUsers
+      };
     }
   } catch (error) {
     console.error('Error al cargar datos:', error);
   }
-  return [...defaultProducts];
+  return {
+    products: [...defaultProducts],
+    users: [...defaultUsers]
+  };
 }
 
 // Guardar datos en archivo
-function saveData(products) {
+function saveData(products, users) {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ products }, null, 2));
+    fs.writeFileSync(DATA_FILE, JSON.stringify({ products, users }, null, 2));
   } catch (error) {
     console.error('Error al guardar datos:', error);
   }
 }
 
-let products = loadData();
+const data = loadData();
+let products = data.products;
+let users = data.users;
 
 // VULNERABILIDAD: No hay logging de eventos de seguridad
 // LOGIN sin logging de intentos fallidos
@@ -82,7 +90,7 @@ app.post('/api/products', (req, res) => {
   const { name, price } = req.body;
   const newProduct = { id: products.length + 1, name, price: parseFloat(price) };
   products.push(newProduct);
-  saveData(products);
+  saveData(products, users);
   // VULNERABILIDAD: No se registra quién creó el producto
   res.json(newProduct);
 });
@@ -93,7 +101,7 @@ app.put('/api/products/:id', (req, res) => {
   if (product) {
     product.name = name;
     product.price = parseFloat(price);
-    saveData(products);
+    saveData(products, users);
     // VULNERABILIDAD: No se registra la modificación ni quién la hizo
     res.json(product);
   } else {
@@ -105,7 +113,7 @@ app.delete('/api/products/:id', (req, res) => {
   const index = products.findIndex(p => p.id === parseInt(req.params.id));
   if (index !== -1) {
     products.splice(index, 1);
-    saveData(products);
+    saveData(products, users);
     // VULNERABILIDAD: No se registra la eliminación crítica de datos
     res.json({ message: 'Producto eliminado' });
   } else {
@@ -120,6 +128,7 @@ app.post('/api/change-password', (req, res) => {
   
   if (user && user.password === oldPassword) {
     user.password = newPassword;
+    saveData(products, users);
     // VULNERABILIDAD: No se registra el cambio de contraseña
     res.json({ success: true });
   } else {

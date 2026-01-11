@@ -19,15 +19,11 @@
     </style>
 </head>
 <body>
-    <div class="warning">
-        <strong>⚠️ Vulnerabilidad Demostrada:</strong> Esta aplicación NO registra eventos de seguridad.
-        Los intentos de login fallidos, cambios de datos y eliminaciones NO quedan registrados.
-    </div>
-
     <div class="header">
         <h2>Gestión de Productos</h2>
         <div>
             <span>Usuario: <strong id="currentUser"></strong></span>
+            <button onclick="changePassword()" class="btn-warning">Cambiar Contraseña</button>
             <button onclick="logout()" class="btn-danger">Cerrar Sesión</button>
         </div>
     </div>
@@ -65,6 +61,44 @@
             localStorage.removeItem('token');
             localStorage.removeItem('username');
             window.location.href = 'index.html';
+        }
+
+        async function changePassword() {
+            const username = localStorage.getItem('username');
+            const oldPassword = prompt('Contraseña actual:');
+            
+            if (!oldPassword) return;
+            
+            const newPassword = prompt('Nueva contraseña:');
+            const confirmPassword = prompt('Confirmar nueva contraseña:');
+            
+            if (!newPassword || !confirmPassword) {
+                alert('Debe completar todos los campos');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/change-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, oldPassword, newPassword })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Contraseña cambiada exitosamente');
+                } else {
+                    alert('Error: Contraseña actual incorrecta');
+                }
+            } catch (error) {
+                alert('Error al cambiar la contraseña');
+            }
         }
 
         async function loadProducts() {

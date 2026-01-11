@@ -1,14 +1,9 @@
 {
   "products": [
     {
-      "id": 1,
-      "name": "Laptop HP",
-      "price": 1000
-    },
-    {
       "id": 2,
       "name": "Mouse Logitech",
-      "price": 25
+      "price": 2000
     },
     {
       "id": 3,
@@ -49,6 +44,20 @@
       "id": 10,
       "name": "Cable HDMI",
       "price": 12
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "admin1234",
+      "role": "admin"
+    },
+    {
+      "id": 2,
+      "username": "user",
+      "password": "user123",
+      "role": "user"
     }
   ]
 }
