@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Productos - Demo Logging Vulnerability</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; }
+        input { padding: 8px; margin: 5px; }
+        button { padding: 8px 15px; margin: 5px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; border: none; }
+        .btn-danger { background: #dc3545; color: white; border: none; }
+        .btn-warning { background: #ffc107; color: black; border: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f4f4f4; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .warning { background: #f8d7da; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="warning">
+        <strong>⚠️ Vulnerabilidad Demostrada:</strong> Esta aplicación NO registra eventos de seguridad.
+        Los intentos de login fallidos, cambios de datos y eliminaciones NO quedan registrados.
+    </div>
+
+    <div class="header">
+        <h2>Gestión de Productos</h2>
+        <div>
+            <span>Usuario: <strong id="currentUser"></strong></span>
+            <button onclick="logout()" class="btn-danger">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div>
+        <h3>Agregar Producto</h3>
+        <input type="text" id="name" placeholder="Nombre del producto">
+        <input type="number" id="price" placeholder="Precio" step="0.01">
+        <button onclick="addProduct()" class="btn-primary">Agregar</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="productsTable"></tbody>
+    </table>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        // Verificar autenticación
+        if (!localStorage.getItem('token')) {
+            window.location.href = 'index.html';
+        }
+        
+        document.getElementById('currentUser').textContent = localStorage.getItem('username');
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = 'index.html';
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_URL}/products`);
+                const products = await response.json();
+                
+                const tbody = document.getElementById('productsTable');
+                tbody.innerHTML = products.map(p => `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.name}</td>
+                        <td>$${p.price}</td>
+                        <td>
+                            <button onclick="editProduct(${p.id}, '${p.name}', ${p.price})" class="btn-warning">Editar</button>
+                            <button onclick="deleteProduct(${p.id})" class="btn-danger">Eliminar</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                alert('Error al cargar productos');
+            }
+        }
+
+        async function addProduct() {
+            const name = document.getElementById('name').value;
+            const price = document.getElementById('price').value;
+            
+            if (!name || !price) {
+                alert('Complete todos los campos');
+                return;
+            }
+
+            try {
+                await fetch(`${API_URL}/products`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, price })
+                });
+                
+                document.getElementById('name').value = '';
+                document.getElementById('price').value = '';
+                loadProducts();
+            } catch (error) {
+                alert('Error al agregar producto');
+            }
+        }
+
+        async function editProduct(id, currentName, currentPrice) {
+            const name = prompt('Nuevo nombre:', currentName);
+            const price = prompt('Nuevo precio:', currentPrice);
+            
+            if (name && price) {
+                try {
+                    await fetch(`${API_URL}/products/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, price })
+                    });
+                    loadProducts();
+                } catch (error) {
+                    alert('Error al editar producto');
+                }
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (confirm('¿Está seguro de eliminar este producto?')) {
+                try {
+                    await fetch(`${API_URL}/products/${id}`, {
+                        method: 'DELETE'
+                    });
+                    loadProducts();
+                } catch (error) {
+                    alert('Error al eliminar producto');
+                }
+            }
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>

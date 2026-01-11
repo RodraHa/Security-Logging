@@ -1,0 +1,54 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Laptop HP",
+      "price": 1000
+    },
+    {
+      "id": 2,
+      "name": "Mouse Logitech",
+      "price": 25
+    },
+    {
+      "id": 3,
+      "name": "Teclado Mecánico",
+      "price": 89
+    },
+    {
+      "id": 4,
+      "name": "Monitor 24\"",
+      "price": 299
+    },
+    {
+      "id": 5,
+      "name": "Webcam HD",
+      "price": 59
+    },
+    {
+      "id": 6,
+      "name": "Auriculares Bluetooth",
+      "price": 79
+    },
+    {
+      "id": 7,
+      "name": "Disco Duro 1TB",
+      "price": 55
+    },
+    {
+      "id": 8,
+      "name": "Memoria RAM 16GB",
+      "price": 75
+    },
+    {
+      "id": 9,
+      "name": "Tarjeta Gráfica",
+      "price": 499
+    },
+    {
+      "id": 10,
+      "name": "Cable HDMI",
+      "price": 12
+    }
+  ]
+}
